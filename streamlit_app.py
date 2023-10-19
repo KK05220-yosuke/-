@@ -1,31 +1,35 @@
 import streamlit as st
-import plotly.graph_objects as go
+import plotly.express as px
 import numpy as np
 
 # Streamlitアプリケーションのタイトルを設定
-st.title('y = x^2 の3Dプロット')
+st.title('y = x^n の3Dプロット')
 
-# x軸の範囲を設定（-10から10まで）
-x = np.linspace(-10, 10, 400)
+# 3Dプロットを作成する関数
+def plot_3d_graph(n):
+    # x軸の範囲を設定（-10から10まで）
+    x = np.linspace(-10, 10, 400)
 
-# y = x^2 の計算
-y_positive = x**2
-y_negative = -x**2
+    # y = x^n の計算
+    y_positive = x**n
+    y_negative = -x**n
 
-# 3Dプロットを作成
-fig = go.Figure()
+    # データフレームを作成
+    data = np.vstack((x, y_positive)).T
+    data_negative = np.vstack((x, y_negative)).T
+    df_positive = pd.DataFrame(data, columns=['X', 'Y'])
+    df_negative = pd.DataFrame(data_negative, columns=['X', 'Y'])
 
-# y > 0 の領域（y = x^2）
-fig.add_trace(go.Surface(x=x, y=y_positive, z=np.zeros_like(x), colorscale='Viridis', opacity=0.8, showscale=False))
+    # Plotlyの3Dプロットを作成
+    fig = px.line_3d(df_positive, x='X', y='Y', z=0, line_shape='linear', color_discrete_sequence=['blue'])
+    fig.add_scatter3d(x=df_negative['X'], y=df_negative['Y'], z=np.zeros_like(df_negative['X']), mode='lines', line=dict(color='red'))
 
-# y < 0 の領域（y = -x^2）
-fig.add_trace(go.Surface(x=x, y=y_negative, z=np.zeros_like(x), colorscale='Viridis', opacity=0.8, showscale=False))
+    # プロットを表示
+    st.plotly_chart(fig)
 
-# レイアウトの設定
-fig.update_layout(scene=dict(zaxis=dict(range=[-100, 100])),
-                  margin=dict(l=0, r=0, b=0, t=0))
-
-# 3Dプロットを表示
-st.plotly_chart(fig)
-
+# アプリケーションを実行する部分
+if __name__ == '__main__':
+    # nの値をユーザーに入力させる
+    n = st.slider('nの値を選択してください', min_value=1, max_value=10, value=2)
+    plot_3d_graph(n)
 
